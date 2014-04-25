@@ -108,6 +108,7 @@ def get_hourly():
  
     print(p)
  
-get_now()
-get_tenday()
-get_hourly()
+if __name__ == '__main__': 
+    get_now()
+    get_tenday()
+    get_hourly()
