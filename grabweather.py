@@ -1,17 +1,21 @@
 #!/usr/bin/python3
 
-import sys 
+import argparse
 import urllib3
 from bs4 import BeautifulSoup
 import prettytable
 from termcolor import colored
 
-zip = str(sys.argv[1])
+parser = argparse.ArgumentParser(description='Gets 10 Day and Hourly Weather.')
+parser.add_argument('zip', nargs=1, default=11217,
+        help='Provide a zipcode to look up universe (my apartment)')
+args = parser.parse_args()
 
 def get_now():
  
     http = urllib3.PoolManager()
-    now_page = http.request('GET', 'http://www.weather.com/weather/today/Brooklyn+NY+%s' % zip) 
+    now_page = http.request('GET', 'http://www.weather.com/weather/today/%s' % 
+                 args.zip[0]) 
     now_soup = BeautifulSoup(now_page.data)
  
     now = now_soup.find(class_ = 'wx-temperature').text
@@ -30,7 +34,8 @@ def get_tenday():
  
     http = urllib3.PoolManager()
  
-    tendaypage = http.request('GET', 'http://www.weather.com/weather/tenday/%s' % zip) 
+    tendaypage = http.request('GET', 'http://www.weather.com/weather/tenday/%s' 
+                      % args.zip[0]) 
     tenday_soup = BeautifulSoup(tendaypage.data)
     wx_daypart = tenday_soup.find_all(class_ = "wx-daypart")
  
@@ -72,7 +77,7 @@ def get_hourly():
  
     http = urllib3.PoolManager()
     hourly_page = http.request('GET', 
-            'http://www.weather.com/weather/hourbyhour/graph/%s' % zip) 
+            'http://www.weather.com/weather/hourbyhour/graph/%s' % args.zip[0])
  
     hourly_soup = BeautifulSoup(hourly_page.data)
     wx_forecast_container = hourly_soup.find(id = 'wx-forecast-container')
