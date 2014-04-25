@@ -1,36 +1,39 @@
-#! /usr/bin/python3
+#!/usr/bin/python3
 
+import sys 
 import urllib3
 from bs4 import BeautifulSoup
 import prettytable
 from termcolor import colored
 
+zip = str(sys.argv[1])
+
 def get_now():
-
+ 
     http = urllib3.PoolManager()
-    now_page = http.request('GET', 'http://www.weather.com/weather/today/Brooklyn+NY+11217')
+    now_page = http.request('GET', 'http://www.weather.com/weather/today/Brooklyn+NY+%s' % zip) 
     now_soup = BeautifulSoup(now_page.data)
-
+ 
     now = now_soup.find(class_ = 'wx-temperature').text
     wind = now_soup.find(class_ = 'wx-wind-label').text
-
+ 
     print(colored('\nCurrent Temperature: ' + now + " | Wind: " + wind + '\n', 'red'))
-
-
+ 
+ 
 def get_tenday():
-
+ 
     date = []
     hi   = []
     low  = []
     condition = []
     chance_rain = []
-
+ 
     http = urllib3.PoolManager()
-
-    tendaypage = http.request('GET', 'http://www.weather.com/weather/tenday/11217')
+ 
+    tendaypage = http.request('GET', 'http://www.weather.com/weather/tenday/%s' % zip) 
     tenday_soup = BeautifulSoup(tendaypage.data)
     wx_daypart = tenday_soup.find_all(class_ = "wx-daypart")
-
+ 
     for x in wx_daypart:
         date.append(x.h3.span.text)
         hi.append(x.div.p.text[1:3])
@@ -43,22 +46,22 @@ def get_tenday():
             chance_rain.append(x.dl.dd.text)
         except:
             chance_rain.append("not provided")
-
+ 
     p = prettytable.PrettyTable()
-
+ 
     print(colored('\nTen Day Forecast:\n', 'yellow'))
-
+ 
     p.add_column('Date', date)
     p.add_column('hi', hi)
     p.add_column('low', low)
     p.add_column('Chance of Rain', chance_rain)
     p.add_column('Condition', condition)
     p.align['Condition'] = 'l'
-
+ 
     print(p)
-
+ 
 def get_hourly():
-
+ 
     hour = []
     temp = []
     condition = []
@@ -66,16 +69,16 @@ def get_hourly():
     humidity = []
     precipitation = []
     wind = []
-
+ 
     http = urllib3.PoolManager()
     hourly_page = http.request('GET', 
-            'http://www.weather.com/weather/hourbyhour/graph/11217')
-
+            'http://www.weather.com/weather/hourbyhour/graph/%s' % zip) 
+ 
     hourly_soup = BeautifulSoup(hourly_page.data)
     wx_forecast_container = hourly_soup.find(id = 'wx-forecast-container')
     wx_timepart = wx_forecast_container.div.findNextSiblings(class_ =
             'wx-timepart')
-
+ 
     for x in wx_timepart:
         hour.append(x.h3.text[0:5].strip())
         temp.append(x.p.text[0:4].strip())
@@ -84,9 +87,9 @@ def get_hourly():
         humidity.append(x.find_all("dd")[1].text.strip())
         precipitation.append(x.find_all("dd")[2].text.strip())
         wind.append(x.find_all("dd")[3].text)
-
+ 
     print(colored('\nHourly Forecast:\n', 'yellow'))
-
+ 
     p = prettytable.PrettyTable() 
     p.add_column('Hour', hour)
     p.add_column('Temp', temp)
@@ -97,11 +100,9 @@ def get_hourly():
     p.add_column('Condition', condition)
     p.align['Condition'] = 'l'
     p.align['Wind'] = 'l'
-
+ 
     print(p)
-
-
-
+ 
 get_now()
 get_tenday()
 get_hourly()
